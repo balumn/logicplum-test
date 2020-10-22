@@ -1,6 +1,8 @@
 # Submission from Balu M N (balumn@ieee.org)
 
 ## This is a Django Project
+## Dependancy: Redis
+    `sudo apt install redis-server`
 
 Project Name: `djangoproject`
 

@@ -9,37 +9,49 @@ def read_csv_zipcodes():
     """
     Get all zip codes from csv file
     """
-    print("reading csv with pandas")
+    print("Getting all zip codes from csv file")
     try:
         data      = pd.read_csv(DATA_CSV_FILE,
                                 converters={'county_weights': eval},
                                 usecols= ['zip'])
         json_data = json.loads(data.to_json())
-        status    = True
+        return True,200,json_data
     except Exception as e:
         print(e)
-        json_data = None
-        status    = False
-    return status,json_data
+        return False,500,None
 
+# NOT A CELERY TASK
 def read_csv_get_document(zipCode):
     print(f"reading csv with zip_code: {zipCode}")
     try:
-        data        = pd.read_csv( DATA_CSV_FILE,
-                            converters={'county_weights': eval}
-                        ).query(f'zip == {zipCode}')
-        json_data   = json.loads(data.to_json(orient='records'))[0]
-        status      = True
-        status_code = 200
+        data      = pd.read_csv( DATA_CSV_FILE,
+                                 converters={'county_weights': eval}
+                               ).query(f'zip == {zipCode}')
+        json_data = json.loads(data.to_json(orient='records'))[0]
+        return True,200,json_data
     except IndexError:
-        json_data   = {
+        json_data = {
             "error" : f"No records with zip_code {zipCode} found"
         }
-        status      = False
-        status_code = 404
+        return False,404,json_data
     except Exception as e:
         print(e)
-        json_data   = None
-        status      = False
-        status_code = 500
-    return status,status_code,json_data
+        return False,500,None
+
+@shared_task
+def update_population(zipCode,population):
+    print(f"reading csv with zip_code: {zipCode}")
+    try:
+        # read
+        data = pd.read_csv( DATA_CSV_FILE,converters={'county_weights': eval})
+
+        # find and modify dataframe
+        data.loc[data['zip'] == zipCode, 'population'] = population
+        
+        # save file back
+        data.to_csv(DATA_CSV_FILE)
+    
+    except Exception as e:
+        print(e)
+
+

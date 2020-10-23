@@ -1,6 +1,7 @@
 from celery import shared_task
 import pandas as pd
 import json 
+from .models import ApiCall
 
 DATA_CSV_FILE = 'static/data/uszips.csv'
 
@@ -93,9 +94,23 @@ def insert_row(
         
         # add new row onto dataframe
         data = data.append(pd.Series(new_row, index=data.columns, name=len(data)))
-        
+
         # save file back
         data.to_csv(DATA_CSV_FILE,index=False)
         del data
     except Exception as e:
         print(e)
+
+@shared_task
+def save_api(path,method,status,code):
+    if status: _status = "SUCCESS"
+    else: _status = "FAILURE"
+
+    # saving api details
+    api_calls = ApiCall.objects.create(
+        name        = path,
+        method      = method,
+        status_code = code,
+        result      = _status )
+    api_calls.save()
+    

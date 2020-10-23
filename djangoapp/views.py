@@ -8,6 +8,8 @@ from django.http import QueryDict
 @api_view(['GET'])
 def api_zip_codes(request):
     _status,status_code,data = read_csv_zipcodes() # NOT AN ASYNC TASK
+    
+    save_api(request.path,request.method,_status,status_code) # save api details
     return JsonResponse(
         {
             "status": _status,
@@ -20,6 +22,7 @@ def api_get_data_from_zip(request, zipCode):
     print(zipCode)
 
     _status,status_code,data = read_csv_get_document(zipCode) # NOT AN ASYNC TASK
+    save_api(request.path,request.method,_status,status_code) # save api details
     return JsonResponse(
         {
             "status"    : _status,
@@ -31,20 +34,25 @@ def api_get_data_from_zip(request, zipCode):
 def api_modify_data(request):
     if request.method == "PUT":
         # update row with population where `zip`== zip
-        data_input = json.loads(request.body.decode("utf-8"))
+        try:
+            data_input = json.loads(request.body.decode("utf-8"))
+        except Exception as e:
+            save_api(request.path,request.method,False,400) # save api details
+            return JsonResponse({"status":False,"error":f"{e}: Json Parsing error"},status = 400)
         try:
             _zip = data_input["zip"]
             population = data_input["population"]
         except KeyError as e:
+            save_api(request.path,request.method,False,400) # save api details
             return JsonResponse({"status":False,"error":f"{e} is a must parameter"},status = 400)
         
-        _status,status_code,data = read_csv_get_document(zipCode) # checking if row exists
+        _status,status_code,data = read_csv_get_document(_zip) # checking if row exists
         if status_code == 404:
+            save_api(request.path,request.method,False,404) # save api details
             return JsonResponse({"status":False,"error":"No such zip code found"},status = 404)
 
-        # celery task
-        update_population.delay(_zip,population)           
-        
+        update_population.delay(_zip,population) # celery task
+        save_api(request.path,request.method,True,200) # save api details
         return JsonResponse(
             {
                 "status" : True,
@@ -56,6 +64,7 @@ def api_modify_data(request):
         try:
             data_input = json.loads(request.body)
         except Exception as e:
+            save_api(request.path,request.method,False,400) # save api details
             return JsonResponse({"status":False,"error":f"{e}: Json Parsing error"},status = 400)
         try:
             _zip             = int(data_input["zip"])
@@ -77,8 +86,10 @@ def api_modify_data(request):
             military         = data_input["military"]
             timezone         = data_input["timezone"]
         except KeyError as e:
+            save_api(request.path,request.method,False,400) # save api details
             return JsonResponse({"status":False,"error":f"{e} is a must parameter"},status = 400)
         except ValueError as e:
+            save_api(request.path,request.method,False,400) # save api details
             return JsonResponse({"status":False,"error":f"{e}"},status = 400)
         
         # parameter validations checking
@@ -94,10 +105,12 @@ def api_modify_data(request):
                 (type(county_fips_all)  == str)
             ):
                 # True case of this if => any of the parameter is not of required type
+                save_api(request.path,request.method,False,400) # save api details
                 return JsonResponse({"status":False,"error":f"Parameter validations checking failed"},status = 400)
             
         _status,status_code,data = read_csv_get_document(_zip) # checking if row exists
         if status_code == 200:
+            save_api(request.path,request.method,False,400) # save api details
             return JsonResponse({"status":False,"error":"Given zip code already found"},status = 400)
         
         # celery task
@@ -121,6 +134,7 @@ def api_modify_data(request):
             military,
             timezone  
         )
+        save_api(request.path,request.method,True,200) # save api details
         return JsonResponse(
             {
                 "status" : True,

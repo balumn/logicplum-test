@@ -1,0 +1,100 @@
+<h1 id="submission-from-balu-m-n-balumn-ieee-org-">Submission from Balu M N (balumn@ieee.org)</h1>
+<h2 id="stack">Stack</h2>
+<ul>
+    <li>Django</li>
+    <li>Celery (django-celery-results)</li>
+    <li>Redis (Broker for celery)</li>
+    <li>Sqlite3 (Django Backend- ORM)</li>
+</ul>
+<h2 id="install-dependancies">Install dependancies</h2>
+<pre><code>sudo apt <span class="hljs-keyword">install</span> redis-<span class="hljs-keyword">server</span>
+pip3 <span class="hljs-keyword">install</span> -r requirments.txt
+</code></pre>
+<h2 id="installation">installation</h2>
+<pre><code><span class="hljs-keyword">python</span> manage.<span class="hljs-keyword">py</span> makemigrations
+<span class="hljs-keyword">python</span> manage.<span class="hljs-keyword">py</span> migrate
+<span class="hljs-keyword">python</span> manage.<span class="hljs-keyword">py</span> runserver <span class="hljs-number">0</span>:<span class="hljs-number">8000</span>
+### Run <span class="hljs-keyword">on</span> <span class="hljs-keyword">new</span> terminal
+celery -A djangoproject worker -<span class="hljs-keyword">l</span> INFO
+</code></pre>
+<p>Login Page : <code>host_ip:8000/admin/</code></p>
+<p>username: <code>user</code></p>
+<p>password: <code>PassW0rd</code></p>
+<h1 id="api-usages">API Usages</h1>
+<h3 id="api-1">API 1</h3>
+<pre><code><span class="hljs-keyword">GET</span> <span class="hljs-string">/api/zip-codes/</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8000
+</code></pre>
+<h3 id="api-2">API 2</h3>
+<pre><code><span class="hljs-keyword">GET</span> <span class="hljs-string">/api/data/&lt;zip_code&gt;/</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8000
+</code></pre>
+<h3 id="api-3">API 3</h3>
+<pre><code>PUT <span class="hljs-meta-keyword">/api/</span>data/ HTTP/<span class="hljs-number">1.1</span>
+<span class="hljs-symbol">Host:</span> localhost:<span class="hljs-number">8000</span>
+Content-Type: application/<span class="hljs-class">json
+</span>{
+    <span class="hljs-string">"zip"</span>: <span class="hljs-params">&lt;zip_code&gt;</span>,
+    <span class="hljs-string">"population"</span>: <span class="hljs-params">&lt;population&gt;</span>
+}
+</code></pre>
+<p>Example</p>
+<pre><code><span class="hljs-string">curl </span><span class="hljs-built_in">--location</span> <span class="hljs-built_in">--request</span> <span class="hljs-string">PUT </span><span class="hljs-string">'http://localhost:8000/api/data/'</span> \
+<span class="hljs-built_in">--header</span> <span class="hljs-string">'Content-Type: application/json'</span> \
+<span class="hljs-built_in">--data-raw</span> <span class="hljs-string">'    {
+        "zip": 603,
+        "population": 48816
+    }'</span>
+</code></pre>
+<h3 id="api-4">API 4</h3>
+<pre><code><span class="hljs-keyword">POST</span> <span class="hljs-string">/api/data/</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8000
+<span class="hljs-attribute">Content-Type</span>: application/json
+
+<span class="json">{
+    <span class="hljs-attr">"zip"</span>: &lt;int&gt;,
+    <span class="hljs-attr">"lat"</span>: &lt;float&gt;,
+    <span class="hljs-attr">"lng"</span>: &lt;float&gt;,
+    <span class="hljs-attr">"city"</span>: &lt;string&gt;,
+    <span class="hljs-attr">"state_id"</span>: &lt;string&gt;,
+    <span class="hljs-attr">"state_name"</span>: &lt;string&gt;,
+    <span class="hljs-attr">"zcta"</span>: &lt;bool&gt;,
+    <span class="hljs-attr">"parent_zcta"</span>: <span class="hljs-literal">null</span>,
+    <span class="hljs-attr">"population"</span>: &lt;int&gt;,
+    <span class="hljs-attr">"density"</span>: &lt;float&gt;,
+    <span class="hljs-attr">"county_fips"</span>: &lt;int&gt;,
+    <span class="hljs-attr">"county_name"</span>: &lt;string&gt;,
+    <span class="hljs-attr">"county_weights"</span>: &lt;json_string&gt;,
+    <span class="hljs-attr">"county_names_all"</span>: &lt;string&gt;,
+    <span class="hljs-attr">"county_fips_all"</span>: &lt;string&gt;,
+    <span class="hljs-attr">"imprecise"</span>: &lt;bool&gt;,
+    <span class="hljs-attr">"military"</span>: &lt;bool&gt;,
+    <span class="hljs-attr">"timezone"</span>: &lt;string&gt;
+}</span>
+</code></pre>
+<p>Example</p>
+<pre><code>curl --<span class="hljs-keyword">location</span> <span class="hljs-title">--request</span> POST 'http://localhost:<span class="hljs-number">8000</span>/api/data/' \
+--header 'Content-<span class="hljs-keyword">Type</span>: application/json' \
+--data-raw '{
+    <span class="hljs-string">"zip"</span>: <span class="hljs-number">1</span>,
+    <span class="hljs-string">"lat"</span>: <span class="hljs-number">18.45439</span>,
+    <span class="hljs-string">"lng"</span>: -<span class="hljs-number">67.12202</span>,
+    <span class="hljs-string">"city"</span>: <span class="hljs-string">"Aguadilla"</span>,
+    <span class="hljs-string">"state_id"</span>: <span class="hljs-string">"PR"</span>,
+    <span class="hljs-string">"state_name"</span>: <span class="hljs-string">"Puerto Rico"</span>,
+    <span class="hljs-string">"zcta"</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-string">"parent_zcta"</span>: null,
+    <span class="hljs-string">"population"</span>: <span class="hljs-number">48814</span>,
+    <span class="hljs-string">"density"</span>: <span class="hljs-number">667.9</span>,
+    <span class="hljs-string">"county_fips"</span>: <span class="hljs-number">72005</span>,
+    <span class="hljs-string">"county_name"</span>: <span class="hljs-string">"Aguadilla"</span>,
+    <span class="hljs-string">"county_weights"</span>: {
+        <span class="hljs-string">"72005"</span>: <span class="hljs-number">100</span>
+    },
+    <span class="hljs-string">"county_names_all"</span>: <span class="hljs-string">"Aguadilla"</span>,
+    <span class="hljs-string">"county_fips_all"</span>: <span class="hljs-string">"72005"</span>,
+    <span class="hljs-string">"imprecise"</span>: <span class="hljs-literal">false</span>,
+    <span class="hljs-string">"military"</span>: <span class="hljs-literal">false</span>,
+    <span class="hljs-string">"timezone"</span>: <span class="hljs-string">"America/Puerto_Rico"</span>
+}'
+</code></pre>

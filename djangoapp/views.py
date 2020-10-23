@@ -4,6 +4,7 @@ from .async_tasks import *
 import json
 from rest_framework.parsers import JSONParser
 from django.http import QueryDict
+from django.shortcuts import render
 
 @api_view(['GET'])
 def api_zip_codes(request):
@@ -143,4 +144,10 @@ def api_modify_data(request):
         )
 
 
-
+def index(request):
+    """
+    A simple view for displaying Home_page.
+    My homepage is my Readme file itself.
+    PS: this HTML is auto-generated from "https://markdowntohtml.com/"
+    """
+    return render(request, 'index.html')
